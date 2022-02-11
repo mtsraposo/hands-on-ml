@@ -8,6 +8,7 @@ authors = ["Matheus Raposo <matheus_raposo@hotmail.com>"]
 python = "^3.8"
 six = "^1.16.0"
 pandas = "^1.4.0"
+matplotlib = "^3.5.1"
 
 [tool.poetry.dev-dependencies]
 
