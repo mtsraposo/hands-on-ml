@@ -9,5 +9,5 @@ Hands-On Machine Learning with Scikit-Learn, Keras and TensorFlow by Aurélien G
 </p>
 
 <p style="text-align: justify">
-Most of the code in this repository was inspired on this book. I revisited the content and added different flavors to test my understanding. 
+Most of the code in this repository was inspired by this book. I revisited the content and added different flavors to test my understanding. 
 </p>
