@@ -1,4 +1,3 @@
 .idea/**
-poetry.lock
 **/.DS_Store
 **/datasets/**
