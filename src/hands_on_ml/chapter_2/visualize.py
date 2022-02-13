@@ -1,5 +1,6 @@
 import os
 
+import pandas as pd
 from matplotlib import pyplot as plt
 
 import io
@@ -14,21 +15,23 @@ def input_data(df, config_data):
     df.info(buf=buf)
     df_info = buf.getvalue()
 
-    info_file = open(os.path.join(config_data['output_path']),
-                     'input_data_info.txt')
+    df.describe(buf=buf)
+    df_descr = buf.getvalue()
+
+    pd.set_option('display.max_columns', 50)
+    info_file = open(os.path.join(config_data['output_path'], 'input_data_info.txt'), 'w')
     info_file.write(f"<<< INFO >>>>\n"
                     f"{df_info}\n\n"
                     f"<<< VALUE COUNTS >>>\n"
                     f"{df['ocean_proximity'].value_counts()}\n\n"
                     f"<<< DESCRIPTION >>>\n"
-                    f"{df.describe()}\n\n")
+                    f"{df_descr}\n\n")
     info_file.close()
 
     # Draw a histogram for each numerical attribute
     fig, ax = plt.subplots(figsize=(12, 8))
     df.hist(bins=50, ax=ax)
-    fig.savefig(os.path.join(config_data['output_path'],
-                             'housing_data.png'))
+    fig.savefig(os.path.join(config_data['output_path'], 'housing_data.png'))
 
 
 def training_set(df, config_data):
@@ -39,5 +42,4 @@ def training_set(df, config_data):
             ax=ax
             )
     plt.legend()
-    fig.savefig(os.path.join(config_data['output_path'],
-                             'output/training_set.png'))
+    fig.savefig(os.path.join(config_data['output_path'], 'training_set.png'))

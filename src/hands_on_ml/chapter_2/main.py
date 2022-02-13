@@ -11,7 +11,8 @@ def set_directories(config_data):
     os.chdir(work_dir)
     lib_io.create_directories(['resources',
                                config_data['output_path'],
-                               config_data['data_path']])
+                               config_data['data_path'],
+                               os.path.join(config_data['data_path'], 'housing')])
 
 
 if __name__ == "__main__":

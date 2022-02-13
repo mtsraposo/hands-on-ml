@@ -6,7 +6,7 @@ from six.moves import urllib
 
 
 def fetch_housing_data(config_data):
-    housing_path = os.path.join(config_data['housing_path'], 'housing')
+    housing_path = os.path.join(config_data['data_path'], 'housing')
     tgz_path = os.path.join(housing_path, "housing.tgz")
     housing_url = os.path.join(config_data['download_root'], config_data['download_path'])
 
