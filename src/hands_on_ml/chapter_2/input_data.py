@@ -13,16 +13,17 @@ def fetch_housing_data(config_data):
     housing_url = os.path.join(config_data['download_root'], config_data['download_path'])
     urllib.request.urlretrieve(housing_url, tgz_path)
     housing_tgz = tarfile.open(tgz_path)
-    housing_tgz.extractall(path=config_data['housing_path'])
+    housing_path = os.path.join(config_data['resources_path'], config_data['housing_path'])
+    housing_tgz.extractall(path=housing_path)
     housing_tgz.close()
+    return os.path.join(housing_path, "housing.csv")
 
 
-def load_housing_data(config_data):
-    csv_path = os.path.join(config_data['housing_path'], "housing.csv")
-    return pd.read_csv(csv_path)
+def load_housing_data(housing_path):
+    return pd.read_csv(housing_path)
 
 
-def inspect_data(df):
+def inspect_data(df, config_data):
     # Useful DataFrame descriptors
     print("<<< INFO >>>>\n")
     df.info()
@@ -35,9 +36,17 @@ def inspect_data(df):
     # Draw a histogram for each numerical attribute
     fig, ax = plt.subplots(figsize=(12, 8))
     df.hist(bins=50, ax=ax)
-    os.makedirs('src/hands_on_ml/chapter_2/resources', exist_ok=True)
-    fig.savefig('src/hands_on_ml/chapter_2/resources/housing_data.png')
+    os.makedirs(config_data['resources_path'], exist_ok=True)
+    fig.savefig(os.path.join(config_data['resources_path'], 'housing_data.png'))
 
 
-def inspect_training_set(df):
-    plt.show()
+def inspect_training_set(df, config_data):
+    fig, ax = plt.subplots()
+    df.plot(kind='scatter', x='longitude', y='latitude', alpha=0.4,
+            s=df['population'] / 100, label='population', figsize=(10, 7),
+            c='median_house_value', cmap=plt.get_cmap('jet'), colorbar=True,
+            ax=ax
+            )
+    plt.legend()
+    os.makedirs(config_data['resources_path'], exist_ok=True)
+    fig.savefig(os.path.join(config_data['resources_path'], 'training_set.png'))
