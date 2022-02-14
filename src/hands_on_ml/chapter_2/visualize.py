@@ -41,12 +41,21 @@ def plot_price_scatter(df, config_data):
     plt.savefig(os.path.join(config_data['output_path'], 'training_set.png'))
 
 
-def training_set(df, config_data):
-    plot_price_scatter(df, config_data)
-
-    df.corr()['median_house_value'].sort_values(ascending=False)
-
+def plot_hist_matrix(df, config_data):
     attributes = ['median_house_value', 'median_income', 'total_rooms',
                   'housing_median_age']
     scatter_matrix(df[attributes], figsize=(12, 8))
     plt.savefig(os.path.join(config_data['output_path'], 'correlations.png'))
+
+
+def plot_specific_scatter(df, config_data, cols):
+    df.plot(kind='scatter', x=cols[0], y=cols[1],
+            alpha=0.1)
+    plt.savefig(os.path.join(config_data['output_path'],
+                             f'{cols[0]}_vs_{cols[1]}.png'))
+
+
+def training_set(df, config_data):
+    plot_price_scatter(df, config_data)
+    plot_hist_matrix(df, config_data)
+    plot_specific_scatter(df, config_data, cols=['median_income', 'median_house_value'])
