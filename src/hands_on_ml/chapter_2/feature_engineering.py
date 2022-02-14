@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import OrdinalEncoder, OneHotEncoder
+from sklearn.base import BaseEstimator, TransformerMixin
 
 
 def create_categories(data):
@@ -41,3 +42,34 @@ def gen_onehot_encoding(housing):
     housing_cat = housing[['ocean_proximity']]
     housing_cat_1hot = cat_encoder.fit_transform(housing_cat)  # returns a SciPy sparse matrix
     return housing_cat_1hot
+
+
+class CombinedAttributesAdder(BaseEstimator, TransformerMixin):
+    """
+    Custom class implementing the basic transformer methods
+    """
+    def __init__(self, attr_to_ix, add_bedrooms_per_room=True):
+        self.add_bedrooms_per_room = add_bedrooms_per_room
+        self.attr_to_ix = attr_to_ix
+
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, X, y=None):
+        rooms_per_household = X[:, self.attr_to_ix['total_rooms']] / X[:, self.attr_to_ix['households']]
+        population_per_household = X[:, self.attr_to_ix['population']] / X[:, self.attr_to_ix['households']]
+        if self.add_bedrooms_per_room:
+            bedrooms_per_room = X[:, self.attr_to_ix['total_bedrooms']] / X[:, self.attr_to_ix['total_rooms']]
+            return np.c_[X, rooms_per_household, population_per_household, bedrooms_per_room]
+        else:
+            return np.c_[X, rooms_per_household, population_per_household]
+
+
+def gen_extra_attributes(housing, attributes=None):
+    if attributes is None:
+        attributes = ['total_rooms', 'households',
+                      'total_bedrooms', 'population']
+    attr_to_ix = {col: list(housing.columns).index(col) for col in attributes}
+    attr_adder = CombinedAttributesAdder(attr_to_ix, add_bedrooms_per_room=False)
+    housing_extra_attribs = attr_adder.transform(housing.values)
+    return housing_extra_attribs
