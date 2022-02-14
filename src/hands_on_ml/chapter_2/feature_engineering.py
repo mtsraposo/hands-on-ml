@@ -11,5 +11,5 @@ def create_categories(data):
 
 def drop_categories(train_test):
     for label, set_ in train_test.items():
-        train_test[label] = set_.drop('income_cat', axis=1)
+        train_test[label] = set_.drop(['id', 'income_cat'], axis=1)
     return train_test

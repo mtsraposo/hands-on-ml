@@ -28,3 +28,5 @@ if __name__ == "__main__":
     stat_train_set = train_test['train'].copy()
 
     visualize.training_set(stat_train_set, config.CONFIG_DATA)
+
+
