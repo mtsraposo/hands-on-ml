@@ -3,3 +3,7 @@ CONFIG_DATA = {'download_root': 'https://raw.githubusercontent.com/ageron/handso
                'base_path': 'src/hands_on_ml/chapter_2',
                'output_path': 'resources/output',
                'data_path': 'resources/data'}
+
+CONFIG_PREPROC = {'categorial_attributes': ['ocean_proximity'],
+                  'numerical_attributes_to_ratios': ['total_rooms', 'households',
+                                                     'total_bedrooms', 'population']}

@@ -1,6 +1,7 @@
 import numpy as np
 from zlib import crc32
 from sklearn.model_selection import StratifiedShuffleSplit
+from src.hands_on_ml.chapter_2 import visualize
 
 
 def split_train_test(data, test_ratio):
@@ -16,11 +17,6 @@ def split_train_test(data, test_ratio):
     train_indices = shuffled_indices[test_set_size:]
     return {'train': data.iloc[train_indices],
             'test': data.iloc[test_indices]}
-
-
-def add_unique_id(data):
-    data['id'] = data['longitude'] * 1000 + data['latitude']
-    return data
 
 
 def test_set_check(identifier, test_ratio):
@@ -51,3 +47,24 @@ def split_train_test_stratified(data):
         strat_test_set = data.loc[test_index]
     return {'train': strat_train_set,
             'test': strat_test_set}
+
+
+def drop_categories(train_test):
+    for label, set_ in train_test.items():
+        train_test[label] = set_.drop(['id', 'income_cat'], axis=1)
+    return train_test
+
+
+def run(housing_with_features, config_data):
+    train_test = split_train_test_stratified(housing_with_features)
+    train_test = drop_categories(train_test)
+    stat_train_set = train_test['train']
+
+    # Save an image with a representation of the training set
+    visualize.training_set(stat_train_set, config_data)
+
+    stat_train_labels = stat_train_set['median_house_value'].copy()
+    stat_train_set = stat_train_set.drop('median_house_value', axis=1)
+
+    return {'labels': stat_train_labels,
+            'set': stat_train_set}
