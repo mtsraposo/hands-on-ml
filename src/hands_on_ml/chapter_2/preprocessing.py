@@ -47,7 +47,10 @@ def gen_onehot_encoding(housing_cat):
     return housing_cat_1hot
 
 
-def gen_numerical_pipeline(attr_to_ix):
+def gen_numerical_pipeline(housing_num, config_preproc):
+    attr_to_ix = feature_engineering.index_attributes(housing_num,
+                                                      # use only selected attributes to generate ratios
+                                                      attributes=config_preproc['numerical_attributes_to_ratios'])
     return Pipeline([
         ('imputer', SimpleImputer(strategy='median')),
         ('attribs_adder', feature_engineering.CombinedAttributesAdder(attr_to_ix)),
@@ -55,19 +58,19 @@ def gen_numerical_pipeline(attr_to_ix):
     ])
 
 
-def run(housing, config_preproc):
+def gen_full_pipeline(housing, config_preproc):
     cat_attribs = config_preproc['categorial_attributes']
     housing_num = housing.drop(cat_attribs, axis=1)  # drop non-numerical column
     num_attribs = list(housing_num)
 
-    attr_to_ix = feature_engineering.index_attributes(housing_num,
-                                                      # use only selected attributes to generate ratios
-                                                      attributes=config_preproc['numerical_attributes_to_ratios'])
-
-    num_pipeline = gen_numerical_pipeline(attr_to_ix)
+    num_pipeline = gen_numerical_pipeline(housing_num, config_preproc)
     full_pipeline = ColumnTransformer([
         ('num', num_pipeline, num_attribs),
         ('cat', OneHotEncoder(), cat_attribs)
     ])
 
+    return full_pipeline
+
+
+def run(housing, full_pipeline):
     return full_pipeline.fit_transform(housing)
