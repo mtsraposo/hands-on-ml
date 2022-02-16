@@ -11,3 +11,5 @@ CONFIG_PREPROC = {'categorial_attributes': ['ocean_proximity'],
 CONFIG_TRAIN = {'method': 'random_forest'}
 
 CONFIG_EVALUATION = {'method': 'cross_validation'}
+
+CONFIG_OUTPUT = {'path': 'resources/output/housing.joblib'}

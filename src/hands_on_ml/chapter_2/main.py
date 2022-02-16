@@ -1,4 +1,5 @@
-from src.hands_on_ml.chapter_2 import input_data, split, feature_engineering, config, preprocessing, train, evaluate
+from src.hands_on_ml.chapter_2 import input_data, split, feature_engineering, config, preprocessing, train, evaluate, \
+    lib_io
 
 if __name__ == "__main__":
     housing_raw = input_data.run(config_data=config.CONFIG_DATA)
@@ -16,3 +17,5 @@ if __name__ == "__main__":
                                       model=model,
                                       labels=housing_training['labels'],
                                       method=config.CONFIG_EVALUATION['method'])
+
+    lib_io.persist_model(model, config.CONFIG_OUTPUT['path'])

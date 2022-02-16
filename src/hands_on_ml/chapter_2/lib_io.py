@@ -1,5 +1,6 @@
 import os
 import re
+from joblib import dump, load
 
 
 def create_directories(paths):
@@ -16,3 +17,11 @@ def set_directories(config_data):
                         config_data['output_path'],
                         config_data['data_path'],
                         os.path.join(config_data['data_path'], 'housing')])
+
+
+def persist_model(model, path):
+    dump(model, path)
+
+
+def load_model(path):
+    return load(path)
