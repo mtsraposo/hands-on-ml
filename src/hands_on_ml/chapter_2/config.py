@@ -8,6 +8,6 @@ CONFIG_PREPROC = {'categorial_attributes': ['ocean_proximity'],
                   'numerical_attributes_to_ratios': ['total_rooms', 'households',
                                                      'total_bedrooms', 'population']}
 
-CONFIG_TRAIN = {'method': 'lin_reg'}
+CONFIG_TRAIN = {'method': 'random_forest'}
 
 CONFIG_EVALUATION = {'method': 'cross_validation'}
