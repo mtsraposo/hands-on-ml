@@ -1,5 +1,6 @@
 from sklearn.metrics import mean_squared_error
 import numpy as np
+from sklearn.model_selection import cross_val_score
 
 
 def predict_sample(data, labels, pipeline, model):
@@ -8,14 +9,32 @@ def predict_sample(data, labels, pipeline, model):
     print('Labels: ', list(labels))
 
 
-def rmse(data_prepared, model, labels):
-    housing_predictions = model.predict(data_prepared)
-    lin_mse = mean_squared_error(labels,
-                                 housing_predictions)
-    lin_rmse = np.sqrt(lin_mse)
-    return lin_rmse
+class ModelEvaluation:
+    def __init__(self, prepared_data, model, labels):
+        self.prepared_data = prepared_data
+        self.model = model
+        self.labels = labels
+
+    def rmse(self):
+        housing_predictions = self.model.predict(self.prepared_data)
+        eval_mse = mean_squared_error(self.labels,
+                                      housing_predictions)
+        eval_rmse = np.sqrt(eval_mse)
+        print(f'RMSE: {eval_rmse}')
+        return eval_rmse
+
+    def cross_validation(self):
+        scores = cross_val_score(self.model, self.prepared_data, self.labels,
+                                 scoring='neg_mean_squared_error', cv=10)
+        tree_rmse_scores = np.sqrt(-scores)
+        print(f'Scores: {tree_rmse_scores}')
+        print(f'Mean: {tree_rmse_scores.mean():.2f}')
+        print(f'Standard deviation: {tree_rmse_scores.std():.2f}')
+        return tree_rmse_scores
 
 
-def run(data_prepared, model, labels):
-    lin_rmse = rmse(data_prepared, model, labels)
-    print(f'RMSE: {lin_rmse:.2f}')
+def run(prepared_data, model, labels, method):
+    model_evaluation = ModelEvaluation(prepared_data, model, labels)
+    eval_function = getattr(ModelEvaluation, method)
+    eval_result = eval_function(model_evaluation)
+    return eval_result

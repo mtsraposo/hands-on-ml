@@ -8,8 +8,11 @@ if __name__ == "__main__":
                                                        config_preproc=config.CONFIG_PREPROC)
     housing_prepared = preprocessing.run(housing=housing_training['set'],
                                          full_pipeline=housing_pipeline)
-    model = train.run(housing_prepared, housing_training['labels'])
+    model = train.run(housing_prepared,
+                      housing_labels=housing_training['labels'],
+                      method=config.CONFIG_TRAIN['method'])
 
-    evaluate.run(data_prepared=housing_prepared,
-                 model=model,
-                 labels=housing_training['labels'])
+    housing_evaluation = evaluate.run(prepared_data=housing_prepared,
+                                      model=model,
+                                      labels=housing_training['labels'],
+                                      method=config.CONFIG_EVALUATION['method'])
