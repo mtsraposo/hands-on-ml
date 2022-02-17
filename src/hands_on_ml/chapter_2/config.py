@@ -11,13 +11,12 @@ CONFIG_PREPROC = {'categorial_attributes': ['ocean_proximity'],
 
 CONFIG_TRAIN = {'method': 'random_forest'}
 
-CONFIG_EVALUATION = {'method': 'cross_validation'}
+CONFIG_EVALUATION = {'method': 'cross_validation',
+                     'regressor': {'type': 'ensemble',
+                                   'name': 'RandomForestRegressor'},
+                     'param_grid': [
+                         {'n_estimators': [3, 10, 30], 'max_features': [2, 4, 6, 8]},
+                         {'bootstrap': [False], 'n_estimators': [3, 10], 'max_features': [2, 3, 4]}
+                     ]}
 
 CONFIG_OUTPUT = {'path': 'resources/output/housing.joblib'}
-
-CONFIG_TUNING = {'regressor': {'type': 'ensemble',
-                               'name': 'RandomForestRegressor'},
-                 'param_grid': [
-                     {'n_estimators': [3, 10, 30], 'max_features': [2, 4, 6, 8]},
-                     {'bootstrap': [False], 'n_estimators': [3, 10], 'max_features': [2, 3, 4]}
-                 ]}

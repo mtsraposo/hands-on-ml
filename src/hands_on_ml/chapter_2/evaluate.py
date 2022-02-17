@@ -1,6 +1,12 @@
-from sklearn.metrics import mean_squared_error
+import logging
+
 import numpy as np
+import sklearn
+from sklearn.metrics import mean_squared_error
+from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import cross_val_score
+
+from src.hands_on_ml.chapter_2 import feature_engineering
 
 
 def predict_sample(data, labels, pipeline, model):
@@ -33,10 +39,37 @@ class ModelEvaluation:
         return tree_rmse_scores
 
 
-def run(housing_model, config_evaluation):
+def show_importances(grid_search, pipeline, num_attribs, extra_attribs):
+    attributes = feature_engineering.get_features_names(pipeline, num_attribs, extra_attribs)
+    feature_importances = grid_search.best_estimator_.feature_importances_
+    importance_list = sorted(zip(feature_importances, attributes), reverse=True)
+    [logging.info(i) for i in importance_list]
+    return importance_list
+
+
+def search_hyperparameters(housing_model, config_evaluation):
+    regressor_type = getattr(sklearn, config_evaluation['regressor']['type'])
+    model = getattr(regressor_type, config_evaluation['regressor']['name'])
+    # An alternative would be RandomizedSearchCV, with a limit
+    # on the number of iterations
+    grid_search = GridSearchCV(model(), config_evaluation['param_grid'], cv=5,
+                               scoring='neg_mean_squared_error',
+                               return_train_score=True)
+    grid_search.fit(housing_model['prepared_data'], housing_model['training']['labels'])
+    return grid_search
+
+
+def run(housing_model, config_evaluation, config_preproc):
     model_evaluation = ModelEvaluation(housing_model['prepared_data'],
                                        housing_model['model'],
                                        housing_model['training']['labels'])
     eval_function = getattr(ModelEvaluation, config_evaluation['method'])
-    eval_result = eval_function(model_evaluation)
-    return eval_result
+    metrics = eval_function(model_evaluation)
+
+    hyperparameter_search = search_hyperparameters(housing_model, config_evaluation)
+    logging.info(hyperparameter_search.best_params_)
+    show_importances(hyperparameter_search,
+                     housing_model['pipeline'],
+                     housing_model['attributes']['num_attribs'], config_preproc['extra_features'])
+    return {'metrics': metrics,
+            'hyperparameter_search': hyperparameter_search}
