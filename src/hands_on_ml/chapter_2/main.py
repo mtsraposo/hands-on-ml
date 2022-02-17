@@ -1,5 +1,8 @@
 from src.hands_on_ml.chapter_2 import input_data, split, feature_engineering, config, preprocessing, train, evaluate, \
-    lib_io
+    lib_io, fine_tuning
+import logging
+
+logging.basicConfig(level=logging.INFO, format='%(message)s')
 
 if __name__ == "__main__":
     housing_raw = input_data.run(config_data=config.CONFIG_DATA)
@@ -19,3 +22,8 @@ if __name__ == "__main__":
                                       method=config.CONFIG_EVALUATION['method'])
 
     lib_io.persist_model(model, config.CONFIG_OUTPUT['path'])
+
+    grid_search = fine_tuning.run(prepared_data=housing_prepared,
+                                  labels=housing_training['labels'],
+                                  param_grid=config.CONFIG_TUNING['param_grid'],
+                                  regressor=config.CONFIG_TUNING['regressor'])
