@@ -6,7 +6,8 @@ CONFIG_DATA = {'download_root': 'https://raw.githubusercontent.com/ageron/handso
 
 CONFIG_PREPROC = {'categorial_attributes': ['ocean_proximity'],
                   'numerical_attributes_to_ratios': ['total_rooms', 'households',
-                                                     'total_bedrooms', 'population']}
+                                                     'total_bedrooms', 'population'],
+                  'extra_features': ['rooms_per_hhold', 'pop_per_hhold', 'bedrooms_per_room']}
 
 CONFIG_TRAIN = {'method': 'random_forest'}
 

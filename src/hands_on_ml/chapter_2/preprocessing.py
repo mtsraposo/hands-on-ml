@@ -58,17 +58,20 @@ def gen_numerical_pipeline(housing_num, config_preproc):
     ])
 
 
-def gen_full_pipeline(housing, config_preproc):
+def get_attributes(housing, config_preproc):
     cat_attribs = config_preproc['categorial_attributes']
-    housing_num = housing.drop(cat_attribs, axis=1)  # drop non-numerical column
-    num_attribs = list(housing_num)
+    housing_num = housing.drop(cat_attribs, axis=1)
+    return {'cat_attribs': cat_attribs,
+            'housing_num': housing_num,  # drop non-numerical column
+            'num_attribs': list(housing_num)}
 
-    num_pipeline = gen_numerical_pipeline(housing_num, config_preproc)
+
+def gen_full_pipeline(attributes, config_preproc):
+    num_pipeline = gen_numerical_pipeline(attributes['housing_num'], config_preproc)
     full_pipeline = ColumnTransformer([
-        ('num', num_pipeline, num_attribs),
-        ('cat', OneHotEncoder(), cat_attribs)
+        ('num', num_pipeline, attributes['num_attribs']),
+        ('cat', OneHotEncoder(), attributes['cat_attribs'])
     ])
-
     return full_pipeline
 
 

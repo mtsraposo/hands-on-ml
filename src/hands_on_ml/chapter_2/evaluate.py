@@ -33,8 +33,10 @@ class ModelEvaluation:
         return tree_rmse_scores
 
 
-def run(prepared_data, model, labels, method):
-    model_evaluation = ModelEvaluation(prepared_data, model, labels)
-    eval_function = getattr(ModelEvaluation, method)
+def run(housing_model, config_evaluation):
+    model_evaluation = ModelEvaluation(housing_model['prepared_data'],
+                                       housing_model['model'],
+                                       housing_model['training']['labels'])
+    eval_function = getattr(ModelEvaluation, config_evaluation['method'])
     eval_result = eval_function(model_evaluation)
     return eval_result
