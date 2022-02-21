@@ -16,8 +16,8 @@ class HousingModel:
         return model
 
 
-def run(housing_prepared, housing_labels, training_algo):
-    housing = HousingModel(housing_prepared, housing_labels)
+def run(prepared_data, labels, training_algo):
+    housing = HousingModel(prepared_data, labels)
     model_type = getattr(sklearn, training_algo['type'])
     regression_class = getattr(model_type, training_algo['name'])
     return housing.fit_model(regression_class(**training_algo['params']))

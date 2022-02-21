@@ -60,9 +60,9 @@ def gen_numerical_pipeline(housing_num, config_preproc):
     ])
 
 
-def get_attributes(housing, config_preproc):
+def get_attributes(training_set, config_preproc):
     cat_attribs = config_preproc['categorial_attributes']
-    housing_num = housing.drop(cat_attribs, axis=1)
+    housing_num = training_set.drop(cat_attribs, axis=1)
     return {'cat_attribs': cat_attribs,
             'housing_num': housing_num,  # drop non-numerical column
             'num_attribs': list(housing_num)}
