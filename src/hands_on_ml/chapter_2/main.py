@@ -1,6 +1,7 @@
 import logging
 
-from src.hands_on_ml.chapter_2 import input_data, split, feature_engineering, config, preprocess, train, evaluate, \
+from src.hands_on_ml.chapter_2 import input_data, split, feature_engineering, \
+    config, preprocess, train, evaluate, \
     lib_io
 
 logging.basicConfig(level=logging.INFO, format='%(message)s')
@@ -9,18 +10,18 @@ logging.basicConfig(level=logging.INFO, format='%(message)s')
 def run(config_data, config_preproc, config_train):
     housing_raw = input_data.run(config_data)
     housing_raw = feature_engineering.run(housing_raw)
-    housing_training = split.run(housing_raw, config_data)
-    housing_attributes = preprocess.get_attributes(housing=housing_training['set'],
+    sample_split = split.run(housing_raw, config_data)
+    housing_attributes = preprocess.get_attributes(housing=sample_split['training_set'],
                                                    config_preproc=config_preproc)
     housing_pipeline = preprocess.gen_full_pipeline(housing_attributes, config_preproc)
-    housing_prepared = preprocess.run(housing=housing_training['set'],
+    housing_prepared = preprocess.run(housing=sample_split['training_set'],
                                       full_pipeline=housing_pipeline)
-    return {'training': housing_training,
+    return {'split': sample_split,
             'attributes': housing_attributes,
             'prepared_data': housing_prepared,
             'pipeline': housing_pipeline,
             'model': train.run(housing_prepared,
-                               housing_labels=housing_training['labels'],
+                               housing_labels=sample_split['training_labels'],
                                method=config_train['method'])}
 
 

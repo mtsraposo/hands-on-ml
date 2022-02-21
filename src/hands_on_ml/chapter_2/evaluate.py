@@ -2,6 +2,7 @@ import logging
 
 import numpy as np
 import sklearn
+from scipy import stats
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import cross_val_score
@@ -55,21 +56,57 @@ def search_hyperparameters(housing_model, config_evaluation):
     grid_search = GridSearchCV(model(), config_evaluation['param_grid'], cv=5,
                                scoring='neg_mean_squared_error',
                                return_train_score=True)
-    grid_search.fit(housing_model['prepared_data'], housing_model['training']['labels'])
+    grid_search.fit(housing_model['prepared_data'], housing_model['split']['training_labels'])
     return grid_search
+
+
+def predict_test_set(hyperparameters, strat_test_set, full_pipeline):
+    final_model = hyperparameters.best_estimator_
+    x_test = strat_test_set.drop('median_house_value', axis=1)
+    x_test_prepared = full_pipeline.transform(x_test)
+    return final_model.predict(x_test_prepared)
+
+
+def calc_out_sample_rmse(strat_test_set, test_set_predictions):
+    mse = mean_squared_error(strat_test_set['median_house_value'], test_set_predictions)
+    rmse = np.sqrt(mse)
+    logging.info(f'RMSE: {rmse}')
+    return rmse
+
+
+def gen_rmse_confidence_interval(final_predictions, strat_test_set, confidence):
+    squared_errors = (final_predictions - strat_test_set['median_house_value']) ** 2
+    confidence_interval = np.sqrt(stats.t.interval(confidence, len(squared_errors) - 1,
+                                                   loc=squared_errors.mean(),
+                                                   scale=stats.sem(squared_errors)))
+    logging.info(f'RMSE ({100 * confidence: .0%}): {confidence_interval}')
+    return confidence_interval
+
+
+def eval_test_set(hyperparameters, strat_test_set, full_pipeline, confidence):
+    test_set_predictions = predict_test_set(hyperparameters, strat_test_set, full_pipeline)
+    return {'predictions': test_set_predictions,
+            'rmse': calc_out_sample_rmse(strat_test_set, test_set_predictions),
+            'confidence_interval': gen_rmse_confidence_interval(test_set_predictions, strat_test_set, confidence)}
 
 
 def run(housing_model, config_evaluation, config_preproc):
     model_evaluation = ModelEvaluation(housing_model['prepared_data'],
                                        housing_model['model'],
-                                       housing_model['training']['labels'])
+                                       housing_model['split']['training_labels'])
     eval_function = getattr(ModelEvaluation, config_evaluation['method'])
     metrics = eval_function(model_evaluation)
 
-    hyperparameter_search = search_hyperparameters(housing_model, config_evaluation)
-    logging.info(hyperparameter_search.best_params_)
-    show_importances(hyperparameter_search,
+    hyperparameters = search_hyperparameters(housing_model, config_evaluation)
+    logging.info(hyperparameters.best_params_)
+    show_importances(hyperparameters,
                      housing_model['pipeline'],
                      housing_model['attributes']['num_attribs'], config_preproc['extra_features'])
+
+    test_set_rmse = eval_test_set(hyperparameters,
+                                  strat_test_set=housing_model['split']['test'],
+                                  full_pipeline=housing_model['pipeline'],
+                                  confidence=config_evaluation['confidence'])
     return {'metrics': metrics,
-            'hyperparameter_search': hyperparameter_search}
+            'hyperparameters': hyperparameters,
+            'test': test_set_rmse}

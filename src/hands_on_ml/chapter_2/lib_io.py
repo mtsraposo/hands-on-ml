@@ -1,5 +1,7 @@
+import logging
 import os
 import re
+
 from joblib import dump, load
 
 
@@ -21,6 +23,7 @@ def set_directories(config_data):
 
 def persist_model(model, path):
     dump(model, path)
+    logging.info(f'Model saved at {path}')
 
 
 def load_model(path):

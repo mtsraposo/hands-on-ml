@@ -1,6 +1,7 @@
 import numpy as np
-from zlib import crc32
 from sklearn.model_selection import StratifiedShuffleSplit
+from zlib import crc32
+
 from src.hands_on_ml.chapter_2 import visualize
 
 
@@ -66,5 +67,6 @@ def run(housing_with_features, config_data):
     stat_train_labels = stat_train_set['median_house_value'].copy()
     stat_train_set = stat_train_set.drop('median_house_value', axis=1)
 
-    return {'labels': stat_train_labels,
-            'set': stat_train_set}
+    return {'training_labels': stat_train_labels,
+            'training_set': stat_train_set,
+            'test': train_test['test']}
