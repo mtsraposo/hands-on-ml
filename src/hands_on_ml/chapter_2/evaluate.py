@@ -3,9 +3,8 @@ import logging
 import numpy as np
 import sklearn
 from scipy import stats
+from sklearn import model_selection
 from sklearn.metrics import mean_squared_error
-from sklearn.model_selection import GridSearchCV
-from sklearn.model_selection import cross_val_score
 
 from src.hands_on_ml.chapter_2 import feature_engineering
 
@@ -31,8 +30,8 @@ class ModelEvaluation:
         return eval_rmse
 
     def cross_validation(self):
-        scores = cross_val_score(self.model, self.prepared_data, self.labels,
-                                 scoring='neg_mean_squared_error', cv=10)
+        scores = model_selection.cross_val_score(self.model, self.prepared_data, self.labels,
+                                                 scoring='neg_mean_squared_error', cv=10)
         tree_rmse_scores = np.sqrt(-scores)
         print(f'Scores: {tree_rmse_scores}')
         print(f'Mean: {tree_rmse_scores.mean():.2f}')
@@ -51,11 +50,8 @@ def show_importances(grid_search, pipeline, num_attribs, extra_attribs):
 def search_hyperparameters(housing_model, config_evaluation):
     regressor_type = getattr(sklearn, config_evaluation['regressor']['type'])
     model = getattr(regressor_type, config_evaluation['regressor']['name'])
-    # An alternative would be RandomizedSearchCV, with a limit
-    # on the number of iterations
-    grid_search = GridSearchCV(model(), config_evaluation['param_grid'], cv=5,
-                               scoring='neg_mean_squared_error',
-                               return_train_score=True)
+    search_class = getattr(model_selection, config_evaluation['search_class']['name'])
+    grid_search = search_class(model(), **config_evaluation['search_class']['params'])
     grid_search.fit(housing_model['prepared_data'], housing_model['split']['training_labels'])
     return grid_search
 

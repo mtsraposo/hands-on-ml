@@ -22,7 +22,7 @@ def run(config_data, config_preproc, config_train):
             'pipeline': housing_pipeline,
             'model': train.run(housing_prepared,
                                housing_labels=sample_split['training_labels'],
-                               method=config_train['method'])}
+                               training_algo=config_train['algorithm'])}
 
 
 if __name__ == "__main__":
