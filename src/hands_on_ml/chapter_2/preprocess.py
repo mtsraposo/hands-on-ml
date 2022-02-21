@@ -3,6 +3,7 @@ from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OrdinalEncoder, OneHotEncoder, StandardScaler
+from sklearn.feature_selection import SelectPercentile, f_regression
 
 from src.hands_on_ml.chapter_2 import feature_engineering
 
@@ -54,7 +55,8 @@ def gen_numerical_pipeline(housing_num, config_preproc):
     return Pipeline([
         ('imputer', SimpleImputer(strategy='median')),
         ('attribs_adder', feature_engineering.CombinedAttributesAdder(attr_to_ix)),
-        ('std_scaler', StandardScaler())
+        ('std_scaler', StandardScaler()),
+        ('feature_selector', SelectPercentile(f_regression, percentile=5))
     ])
 
 
@@ -75,5 +77,5 @@ def gen_full_pipeline(attributes, config_preproc):
     return full_pipeline
 
 
-def run(housing, full_pipeline):
-    return full_pipeline.fit_transform(housing)
+def run(training_set, labels, full_pipeline):
+    return full_pipeline.fit_transform(training_set, labels)

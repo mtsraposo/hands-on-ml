@@ -11,13 +11,14 @@ def run(config_data, config_preproc, config_train):
     housing_raw = input_data.run(config_data)
     housing_raw = feature_engineering.run(housing_raw)
     sample_split = split.run(housing_raw, config_data)
-    housing_attributes = preprocess.get_attributes(housing=sample_split['training_set'],
-                                                   config_preproc=config_preproc)
-    housing_pipeline = preprocess.gen_full_pipeline(housing_attributes, config_preproc)
-    housing_prepared = preprocess.run(housing=sample_split['training_set'],
+    attributes = preprocess.get_attributes(housing=sample_split['training_set'],
+                                           config_preproc=config_preproc)
+    housing_pipeline = preprocess.gen_full_pipeline(attributes, config_preproc)
+    housing_prepared = preprocess.run(training_set=sample_split['training_set'],
+                                      labels=sample_split['training_labels'],
                                       full_pipeline=housing_pipeline)
     return {'split': sample_split,
-            'attributes': housing_attributes,
+            'attributes': attributes,
             'prepared_data': housing_prepared,
             'pipeline': housing_pipeline,
             'model': train.run(housing_prepared,
