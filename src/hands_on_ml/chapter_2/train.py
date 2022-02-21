@@ -1,23 +1,20 @@
 import sklearn
+from sklearn.pipeline import Pipeline
 
 
-class HousingModel:
-    """
-    Implemented here to allow for calling models by their names
-    and eventually implementing custom features to each of them
-    """
+def gen_full_pipeline(preproc_pipeline, config_train):
+    model_type = getattr(sklearn, config_train['algorithm']['type'])
+    regression_class = getattr(model_type, config_train['algorithm']['name'])
 
-    def __init__(self, prepared_data, labels):
-        self.prepared_data = prepared_data
-        self.labels = labels
-
-    def fit_model(self, model):
-        model.fit(self.prepared_data, self.labels)
-        return model
+    full_pipeline = Pipeline([
+        ('preprocessor', preproc_pipeline),
+        ('model', regression_class(**config_train['algorithm']['params']))
+    ])
+    return full_pipeline
 
 
-def run(prepared_data, labels, training_algo):
-    housing = HousingModel(prepared_data, labels)
-    model_type = getattr(sklearn, training_algo['type'])
-    regression_class = getattr(model_type, training_algo['name'])
-    return housing.fit_model(regression_class(**training_algo['params']))
+def run(sample_split, config_train, preproc_pipeline):
+    full_pipeline = gen_full_pipeline(preproc_pipeline, config_train)
+    return {'pipeline': full_pipeline,
+            'model': full_pipeline.fit(sample_split['training_set'],
+                                       sample_split['training_labels'])}

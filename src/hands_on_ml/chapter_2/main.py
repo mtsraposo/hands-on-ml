@@ -9,21 +9,14 @@ logging.basicConfig(level=logging.INFO, format='%(message)s')
 
 def run(config_data, config_preproc, config_train):
     raw = input_data.run(config_data)
-    raw = feature_engineering.run(raw)
-    sample_split = split.run(raw, config_data)
+    with_features = feature_engineering.run(raw)
+    sample_split = split.run(with_features, config_data)
     attributes = preprocess.get_attributes(training_set=sample_split['training_set'],
                                            config_preproc=config_preproc)
-    pipeline = preprocess.gen_full_pipeline(attributes, config_preproc)
-    prepared_data = preprocess.run(training_set=sample_split['training_set'],
-                                   labels=sample_split['training_labels'],
-                                   full_pipeline=pipeline)
+    preproc_pipeline = preprocess.gen_pipeline(attributes, config_preproc)
     return {'split': sample_split,
             'attributes': attributes,
-            'prepared_data': prepared_data,
-            'pipeline': pipeline,
-            'model': train.run(prepared_data,
-                               labels=sample_split['training_labels'],
-                               training_algo=config_train['algorithm'])}
+            'model': train.run(sample_split, config_train, preproc_pipeline)}
 
 
 if __name__ == "__main__":

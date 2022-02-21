@@ -1,9 +1,10 @@
 import pandas as pd
 from sklearn.compose import ColumnTransformer
+from sklearn.feature_selection import SelectPercentile, f_regression
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import OrdinalEncoder, OneHotEncoder, StandardScaler
-from sklearn.feature_selection import SelectPercentile, f_regression
+from sklearn.preprocessing import OrdinalEncoder
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
 
 from src.hands_on_ml.chapter_2 import feature_engineering
 
@@ -48,34 +49,26 @@ def gen_onehot_encoding(housing_cat):
     return housing_cat_1hot
 
 
-def gen_numerical_pipeline(housing_num, config_preproc):
-    attr_to_ix = feature_engineering.index_attributes(housing_num,
+def get_attributes(training_set, config_preproc):
+    cat_attribs = config_preproc['categorial_attributes']
+    num_df = training_set.drop(cat_attribs, axis=1)
+    return {'cat_attribs': cat_attribs,
+            'num_df': num_df,  # drop non-numerical column
+            'num_attribs': list(num_df)}
+
+
+def gen_pipeline(attributes, config_preproc):
+    attr_to_ix = feature_engineering.index_attributes(attributes['num_df'],
                                                       # use only selected attributes to generate ratios
                                                       attributes=config_preproc['numerical_attributes_to_ratios'])
-    return Pipeline([
+    num_pipeline = Pipeline([
         ('imputer', SimpleImputer(strategy='median')),
         ('attribs_adder', feature_engineering.CombinedAttributesAdder(attr_to_ix)),
         ('std_scaler', StandardScaler()),
         ('feature_selector', SelectPercentile(f_regression, percentile=5))
     ])
 
-
-def get_attributes(training_set, config_preproc):
-    cat_attribs = config_preproc['categorial_attributes']
-    housing_num = training_set.drop(cat_attribs, axis=1)
-    return {'cat_attribs': cat_attribs,
-            'housing_num': housing_num,  # drop non-numerical column
-            'num_attribs': list(housing_num)}
-
-
-def gen_full_pipeline(attributes, config_preproc):
-    num_pipeline = gen_numerical_pipeline(attributes['housing_num'], config_preproc)
-    full_pipeline = ColumnTransformer([
+    return ColumnTransformer([
         ('num', num_pipeline, attributes['num_attribs']),
-        ('cat', OneHotEncoder(), attributes['cat_attribs'])
+        ('cat', OneHotEncoder(), attributes['cat_attribs']),
     ])
-    return full_pipeline
-
-
-def run(training_set, labels, full_pipeline):
-    return full_pipeline.fit_transform(training_set, labels)
