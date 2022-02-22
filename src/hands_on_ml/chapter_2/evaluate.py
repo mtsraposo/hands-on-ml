@@ -103,7 +103,7 @@ def run(trained, config_evaluation):
     eval_function = getattr(ModelEvaluation, config_evaluation['method'])
     metrics = eval_function(model_evaluation)
 
-    logging.info(trained['estimators']['search'].best_params_)
+    logging.info(f"Best model: {trained['estimators']['search'].best_params_}")
     test_set_rmse = eval_test_set(trained,
                                   confidence=config_evaluation['confidence'])
     return {'metrics': metrics,
