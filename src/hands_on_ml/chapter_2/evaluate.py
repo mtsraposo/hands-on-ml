@@ -1,12 +1,9 @@
 import logging
 
 import numpy as np
-import sklearn
 from scipy import stats
 from sklearn import model_selection
 from sklearn.metrics import mean_squared_error
-
-from src.hands_on_ml.chapter_2 import feature_engineering
 
 
 def predict_sample(data, labels, pipeline, model):
@@ -16,13 +13,13 @@ def predict_sample(data, labels, pipeline, model):
 
 
 class ModelEvaluation:
-    def __init__(self, prepared_data, model, labels):
-        self.prepared_data = prepared_data
+    def __init__(self, data_to_eval, model, labels):
+        self.data_to_eval = data_to_eval
         self.model = model
         self.labels = labels
 
     def rmse(self):
-        housing_predictions = self.model.predict(self.prepared_data)
+        housing_predictions = self.model.predict(self.data_to_eval)
         eval_mse = mean_squared_error(self.labels,
                                       housing_predictions)
         eval_rmse = np.sqrt(eval_mse)
@@ -30,7 +27,7 @@ class ModelEvaluation:
         return eval_rmse
 
     def cross_validation(self):
-        scores = model_selection.cross_val_score(self.model, self.prepared_data, self.labels,
+        scores = model_selection.cross_val_score(self.model, self.data_to_eval, self.labels,
                                                  scoring='neg_mean_squared_error', cv=10)
         tree_rmse_scores = np.sqrt(-scores)
         print(f'Scores: {tree_rmse_scores}')
@@ -39,70 +36,75 @@ class ModelEvaluation:
         return tree_rmse_scores
 
 
-def show_importances(grid_search, pipeline, num_attribs, extra_attribs):
-    attributes = feature_engineering.get_features_names(pipeline, num_attribs, extra_attribs)
-    feature_importances = grid_search.best_estimator_.feature_importances_
+def get_features_names(trained, extra_features):
+    """
+    Returns the list of feature names, as defined by the pipeline
+    This implementation explicitly places each attribute type according
+    to the order in which it appears in the pipeline, so it must be updated
+    when the pipeline changes
+    """
+    cat_encoder = trained['estimators']['preproc'].named_transformers_['cat']
+    cat_one_hot_attribs = list(cat_encoder.categories_[0])
+    return (trained['attributes']['num_attribs']
+            + extra_features
+            + cat_one_hot_attribs)
+
+
+def show_importances(trained, extra_features):
+    """
+    For models such as RandomForestRegressor, this function will show the relative importance of
+    each regressed feature.
+    """
+    attributes = get_features_names(trained, extra_features)
+    feature_importances = trained['estimators']['search'].best_estimator_.feature_importances_
     importance_list = sorted(zip(feature_importances, attributes), reverse=True)
     [logging.info(i) for i in importance_list]
     return importance_list
 
 
-def search_hyperparameters(housing_model, config_evaluation):
-    regressor_type = getattr(sklearn, config_evaluation['regressor']['type'])
-    model = getattr(regressor_type, config_evaluation['regressor']['name'])
-    search_class = getattr(model_selection, config_evaluation['search_class']['name'])
-    grid_search = search_class(model(), **config_evaluation['search_class']['params'])
-    grid_search.fit(housing_model['prepared_data'], housing_model['split']['training_labels'])
-    return grid_search
+def prepare_test_set(trained):
+    x_test = trained['split']['test'].drop('median_house_value', axis=1)
+    return trained['estimators']['preproc'].transform(x_test)
 
 
-def predict_test_set(hyperparameters, strat_test_set, full_pipeline):
-    final_model = hyperparameters.best_estimator_
-    x_test = strat_test_set.drop('median_house_value', axis=1)
-    x_test_prepared = full_pipeline.transform(x_test)
+def predict_test_set(trained):
+    final_model = trained['estimators']['search'].best_estimator_['model']
+    x_test_prepared = prepare_test_set(trained)
     return final_model.predict(x_test_prepared)
 
 
-def calc_out_sample_rmse(strat_test_set, test_set_predictions):
-    mse = mean_squared_error(strat_test_set['median_house_value'], test_set_predictions)
+def calc_out_sample_rmse(trained, test_set_predictions):
+    mse = mean_squared_error(trained['split']['test']['median_house_value'], test_set_predictions)
     rmse = np.sqrt(mse)
-    logging.info(f'RMSE: {rmse}')
+    logging.info(f'RMSE: {rmse:.2f}')
     return rmse
 
 
-def gen_rmse_confidence_interval(final_predictions, strat_test_set, confidence):
-    squared_errors = (final_predictions - strat_test_set['median_house_value']) ** 2
-    confidence_interval = np.sqrt(stats.t.interval(confidence, len(squared_errors) - 1,
-                                                   loc=squared_errors.mean(),
-                                                   scale=stats.sem(squared_errors)))
-    logging.info(f'RMSE ({100 * confidence: .0%}): {confidence_interval}')
-    return confidence_interval
+def gen_rmse_confidence_interval(trained, test_set_predictions, confidence):
+    squared_errors = (test_set_predictions - trained['split']['test']['median_house_value']) ** 2
+    interval = np.sqrt(stats.t.interval(confidence, len(squared_errors) - 1,
+                                        loc=squared_errors.mean(),
+                                        scale=stats.sem(squared_errors)))
+    logging.info(f'RMSE ({confidence:.0%}): [{interval[0]:.2f},{interval[1]:.2f}]')
+    return interval
 
 
-def eval_test_set(hyperparameters, strat_test_set, full_pipeline, confidence):
-    test_set_predictions = predict_test_set(hyperparameters, strat_test_set, full_pipeline)
+def eval_test_set(trained, confidence):
+    test_set_predictions = predict_test_set(trained)
     return {'predictions': test_set_predictions,
-            'rmse': calc_out_sample_rmse(strat_test_set, test_set_predictions),
-            'confidence_interval': gen_rmse_confidence_interval(test_set_predictions, strat_test_set, confidence)}
+            'rmse': calc_out_sample_rmse(trained, test_set_predictions),
+            'confidence_interval': gen_rmse_confidence_interval(trained, test_set_predictions, confidence)}
 
 
-def run(housing_model, config_evaluation, config_preproc):
-    model_evaluation = ModelEvaluation(housing_model['prepared_data'],
-                                       housing_model['model'],
-                                       housing_model['split']['training_labels'])
+def run(trained, config_evaluation):
+    model_evaluation = ModelEvaluation(data_to_eval=trained['estimators']['training_set_prepared'],
+                                       model=trained['estimators']['regression'],
+                                       labels=trained['split']['training_labels'])
     eval_function = getattr(ModelEvaluation, config_evaluation['method'])
     metrics = eval_function(model_evaluation)
 
-    hyperparameters = search_hyperparameters(housing_model, config_evaluation)
-    logging.info(hyperparameters.best_params_)
-    show_importances(hyperparameters,
-                     housing_model['pipeline'],
-                     housing_model['attributes']['num_attribs'], config_preproc['extra_features'])
-
-    test_set_rmse = eval_test_set(hyperparameters,
-                                  strat_test_set=housing_model['split']['test'],
-                                  full_pipeline=housing_model['pipeline'],
+    logging.info(trained['estimators']['search'].best_params_)
+    test_set_rmse = eval_test_set(trained,
                                   confidence=config_evaluation['confidence'])
     return {'metrics': metrics,
-            'hyperparameters': hyperparameters,
             'test': test_set_rmse}

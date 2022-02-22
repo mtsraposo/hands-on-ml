@@ -43,18 +43,6 @@ def create_categories(data):
     return data
 
 
-def get_features_names(pipeline, num_attribs, extra_attribs):
-    """
-    Returns the list of feature names, as defined by the pipeline
-    This implementation explicitly places each attribute type according
-    to the order in which it appears in the pipeline, so it must be updated
-    when the pipeline changes
-    """
-    cat_encoder = pipeline.named_transformers_['cat']
-    cat_one_hot_attribs = list(cat_encoder.categories_[0])
-    return num_attribs + extra_attribs + cat_one_hot_attribs
-
-
 def run(housing_raw):
     return reduce(lambda res, f: f(res),
                   [add_unique_id,

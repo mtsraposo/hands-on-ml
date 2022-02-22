@@ -68,7 +68,9 @@ def gen_pipeline(attributes, config_preproc):
         ('feature_selector', SelectPercentile(f_regression, percentile=5))
     ])
 
-    return ColumnTransformer([
+    preproc_pipeline = ColumnTransformer([
         ('num', num_pipeline, attributes['num_attribs']),
         ('cat', OneHotEncoder(), attributes['cat_attribs']),
     ])
+
+    return preproc_pipeline
