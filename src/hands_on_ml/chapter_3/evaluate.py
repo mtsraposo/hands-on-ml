@@ -1,8 +1,13 @@
 from sklearn.base import clone
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import StratifiedKFold, cross_val_predict
+from sklearn.metrics import confusion_matrix, precision_score, recall_score, f1_score, precision_recall_curve
 
 
 def cross_validation(data, model):
+    """
+    Calculates the cross validation accuracy of the classifier model on the data.
+    Serves as a counter example for performance measurement of classifiers.
+    """
     accuracy = []
     skfolds = StratifiedKFold(n_splits=3)
     for train_index, test_index in skfolds.split(data['X']['train'], data['y']['train']):
@@ -17,3 +22,20 @@ def cross_validation(data, model):
         n_correct = sum(y_pred == y_test_fold)
         accuracy += [n_correct / len(y_pred)]
     return accuracy
+
+
+def gen_confusion_matrix(data, model):
+    y_train_pred = cross_val_predict(model,
+                                     data['X']['train'],
+                                     data['y']['train'],
+                                     cv=3)
+    return {'confusion_matrix': confusion_matrix(data['y']['train'], y_train_pred),
+            'precision': precision_score(data['y']['train'], y_train_pred),
+            'recall': recall_score(data['y']['train'], y_train_pred),
+            'f1': f1_score(data['y']['train'], y_train_pred)}
+
+
+def gen_recall_curve(data, model):
+    y_scores = cross_val_predict(model, data['X']['train'], data['y']['train'],
+                                 cv=3, method='decision_function')
+    return precision_recall_curve(data['y']['train'], y_scores)
