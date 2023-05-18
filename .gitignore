@@ -1,6 +1,7 @@
-.idea/**
+.idea/
 **/.DS_Store
 **/datasets/**
 **/__pycache__/**
 **/output/**
 **/data/**
+.venv/

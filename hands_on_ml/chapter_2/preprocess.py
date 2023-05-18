@@ -6,7 +6,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OrdinalEncoder
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 
-from src.hands_on_ml.chapter_2 import feature_engineering
+from hands_on_ml.chapter_2 import feature_engineering
 
 
 def fill_with_median(housing_num):

@@ -2,7 +2,7 @@ import numpy as np
 from sklearn.model_selection import StratifiedShuffleSplit
 from zlib import crc32
 
-from src.hands_on_ml.chapter_2 import visualize
+from hands_on_ml.chapter_2 import visualize
 
 
 def split_train_test(data, test_ratio):

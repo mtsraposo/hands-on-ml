@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "hands-on-ml"
+version = "0.1.0"
+description = ""
+authors = ["Matheus Raposo <matheus_raposo@hotmail.com>"]
+readme = "README.md"
+packages = [{include = "hands_on_ml"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
