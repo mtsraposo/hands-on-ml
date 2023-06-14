@@ -12,6 +12,8 @@ scikit-learn = "^1.2.2"
 notebook = "^6.5.4"
 jupyter = "^1.0.0"
 pandas = "^2.0.1"
+requests = "^2.31.0"
+beautifulsoup4 = "^4.12.2"
 
 
 [build-system]
