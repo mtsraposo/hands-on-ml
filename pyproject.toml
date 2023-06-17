@@ -16,6 +16,11 @@ requests = "^2.31.0"
 beautifulsoup4 = "^4.12.2"
 chardet = "^5.1.0"
 pyspark = "^3.4.0"
+transformers = "^4.30.2"
+torch = "^2.0.1"
+matplotlib = "^3.7.1"
+numpy = "^1.24.3"
+sklearn = "^0.0.post5"
 
 
 [build-system]
