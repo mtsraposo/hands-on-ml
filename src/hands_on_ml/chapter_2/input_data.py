@@ -4,7 +4,8 @@ import tarfile
 import pandas as pd
 from six.moves import urllib
 
-from hands_on_ml.chapter_2 import visualize, lib_io
+from src.hands_on_ml.chapter_2 import lib_io
+from src.hands_on_ml.chapter_2 import visualize
 
 
 def fetch_housing_data(config_data):

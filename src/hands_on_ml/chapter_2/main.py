@@ -1,8 +1,8 @@
 import logging
 
-from hands_on_ml.chapter_2 import config, \
-    evaluate, split
-from hands_on_ml.chapter_2 import input_data, train, feature_engineering, lib_io, preprocess
+from src.hands_on_ml.chapter_2 import evaluate
+from src.hands_on_ml.chapter_2 import config, preprocess, split, train, input_data
+from src.hands_on_ml.chapter_2 import feature_engineering, lib_io
 
 logging.basicConfig(level=logging.INFO, format='%(message)s')
 
